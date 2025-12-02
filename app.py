@@ -225,18 +225,12 @@ def init_db():
 # -----------------------
 #  실행
 # -----------------------
-if __name__ == "__main__":
-    with app.app_context():
-        init_db()
-    # 개발 단계라 debug=True 유지, 배포할 때 False로 바꿀 예정
-    if __name__ == "__main__":
-     with app.app_context():
-        init_db()
-        app.run()
-import os
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(BASE_DIR, 'anime.db')
 
+# 서버가 시작될 때(로컬, Render 둘 다) DB 초기화 + 시드 데이터 삽입
 with app.app_context():
-    db.create_all()
+    init_db()
+
+# 로컬에서 python app.py 로 실행할 때만 개발 서버 띄우기
+if __name__ == "__main__":
+    app.run(debug=True)
 
