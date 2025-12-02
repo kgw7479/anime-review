@@ -176,7 +176,7 @@ def init_db():
             Anime(
                 title="블루록",
                 genre="스포츠",
-                image_url="images/bluelock.jpg",
+                image_url="images/Bluelock.jpg",
             ),
             Anime(
                 title="진격의 거인",
