@@ -52,7 +52,6 @@ class Review(db.Model):
 # -------------------------
 @app.route("/")
 def home():
-    print("### DEPLOY TEST: {{ 나기웅 }} ###")
 
     return redirect(url_for("anime_list"))
 
@@ -138,6 +137,62 @@ def like_review(review_id):
 # -------------------------
 def init_db():
     db.create_all()
+
+    # 애니가 하나도 없으면 샘플 데이터 6개 넣기
+    if Anime.query.count() == 0:
+        seed = [
+            Anime(
+                title="하이큐!!",
+                genre="스포츠",
+                year=2014,
+                episodes=25,
+                description="배구에 모든 것을 거는 영춘고 배구부의 성장기.",
+                image_url="images/haikyuu.jpg",
+            ),
+            Anime(
+                title="블루록",
+                genre="스포츠",
+                year=2022,
+                episodes=24,
+                description="세계 최고의 스트라이커를 만들기 위한 블루록 프로젝트.",
+                image_url="images/bluelock.jpg",
+            ),
+            Anime(
+                title="진격의 거인",
+                genre="다크 판타지",
+                year=2013,
+                episodes=25,
+                description="거인에게 잠식된 벽 안의 세계, 인류의 생존 전쟁.",
+                image_url="images/aot.jpg",
+            ),
+            Anime(
+                title="도쿄 리벤저스",
+                genre="액션",
+                year=2021,
+                episodes=24,
+                description="과거로 돌아가 인생을 다시 쓰려는 한 남자의 갱단 타임리프.",
+                image_url="images/tokyo_revengers.jpg",
+            ),
+            Anime(
+                title="귀멸의 칼날",
+                genre="판타지",
+                year=2019,
+                episodes=26,
+                description="혈귀가 된 여동생을 인간으로 되돌리기 위한 탄지로의 여정.",
+                image_url="images/demon_slayer.jpg",
+            ),
+            Anime(
+                title="주술회전",
+                genre="판타지",
+                year=2020,
+                episodes=24,
+                description="저주를 둘러싼 주술사들의 격렬한 싸움.",
+                image_url="images/jjk.jpg",
+            ),
+        ]
+        db.session.bulk_save_objects(seed)
+        db.session.commit()
+
 
 with app.app_context():
     init_db()
