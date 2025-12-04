@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash, jso
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 
+
 app = Flask(__name__)
 app.secret_key = "secret-key"
 
@@ -51,6 +52,8 @@ class Review(db.Model):
 # -------------------------
 @app.route("/")
 def home():
+    print("### DEPLOY TEST: {{ 나기웅 }} ###")
+
     return redirect(url_for("anime_list"))
 
 
