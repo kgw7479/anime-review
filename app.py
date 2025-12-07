@@ -353,4 +353,7 @@ with app.app_context():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    # Render 같은 PaaS에서 PORT 환경변수를 사용
+    port = int(os.environ.get("PORT", 5000))
+    # 0.0.0.0 으로 바인딩해야 외부에서 접속 가능
+    app.run(debug=True, host="0.0.0.0", port=port)
