@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>관리자 - 애니 목록 관리</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<header class="site-header">
+    <div class="site-header-inner">
+        <h1 class="logo">Anime Review - Admin</h1>
+        <nav class="site-nav">
+            <a href="{{ url_for('anime_list') }}" class="nav-link">사이트로 돌아가기</a>
+            <a href="{{ url_for('admin_logout') }}" class="nav-link">로그아웃</a>
+        </nav>
+    </div>
+</header>
+
+<main class="container">
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul class="flash-list">
+                {% for m in messages %}
+                    <li class="flash-item">{{ m }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+
+    <section class="card">
+        <h2 class="section-title">애니 목록 (관리자용)</h2>
+        <p class="section-desc">현재 DB에 등록된 애니 목록입니다. (추가/수정은 나중에 기능 확장 예정)</p>
+
+        <ul class="anime-list admin-list">
+            {% for anime in animes %}
+                <li class="anime-item">
+                    <div class="anime-info">
+                        <div class="anime-title-row">
+                            <span class="title">{{ anime.title }}</span>
+                            {% if anime.year %}
+                                <span class="year">{{ anime.year }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="anime-meta-row">
+                            <span class="badge-genre">{{ anime.genre }}</span>
+                            <span class="review-count">
+                                리뷰 {{ anime.review_count }}개
+                            </span>
+                        </div>
+                        {% if anime.description %}
+                            <p class="anime-desc">
+                                {{ anime.description[:80] }}{% if anime.description|length > 80 %}...{% endif %}
+                            </p>
+                        {% endif %}
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+    </section>
+</main>
+</body>
+</html>

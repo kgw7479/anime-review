@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>관리자 로그인 - Anime Review</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<header class="site-header">
+    <div class="site-header-inner">
+        <h1 class="logo">Anime Review</h1>
+        <nav class="site-nav">
+            <a href="{{ url_for('anime_list') }}" class="nav-link">애니 목록</a>
+        </nav>
+    </div>
+</header>
+
+<main class="container">
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul class="flash-list">
+                {% for m in messages %}
+                    <li class="flash-item">{{ m }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+
+    <section class="card small-card">
+        <h2 class="section-title">관리자 로그인</h2>
+        <form method="post" class="review-form">
+            <div class="form-row">
+                <label for="password">비밀번호</label>
+                <input type="password" id="password" name="password" class="input-text">
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn-primary">로그인</button>
+            </div>
+        </form>
+    </section>
+</main>
+</body>
+</html>
+

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>관리자 - 애니 추가</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<header class="site-header">
+    <div class="site-header-inner">
+        <h1 class="logo">Anime Review - 관리자</h1>
+        <nav class="site-nav">
+            <a href="{{ url_for('anime_list') }}" class="nav-link">애니 목록</a>
+        </nav>
+    </div>
+</header>
+
+<main class="container">
+    <h2 class="section-title">새 애니 등록</h2>
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul class="flash-list">
+                {% for msg in messages %}
+                    <li class="flash-item">{{ msg }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+
+    <form method="post" action="{{ url_for('admin_new_anime') }}" class="review-form">
+        <!-- 관리자 키를 폼에도 같이 넣어서 POST 때도 검증 -->
+        <input type="hidden" name="key" value="{{ admin_key }}">
+
+        <div class="form-row">
+            <label for="title">제목 *</label>
+            <input id="title" name="title" type="text" class="input-text" required>
+        </div>
+
+        <div class="form-row">
+            <label for="genre">장르 *</label>
+            <input id="genre" name="genre" type="text" class="input-text" required>
+        </div>
+
+        <div class="form-row">
+            <label for="year">방영 연도</label>
+            <input id="year" name="year" type="number" class="input-text" min="1900" max="2100">
+        </div>
+
+        <div class="form-row">
+            <label for="episodes">화수</label>
+            <input id="episodes" name="episodes" type="number" class="input-text" min="1">
+        </div>
+
+        <div class="form-row">
+            <label for="image_url">이미지 경로 (static 기준)</label>
+            <input id="image_url" name="image_url" type="text"
+                   class="input-text"
+                   placeholder="예: images/new_anime.jpg">
+        </div>
+
+        <div class="form-row">
+            <label for="description">작품 설명</label>
+            <textarea id="description" name="description" rows="4"
+                      class="input-text"
+                      placeholder="작품 소개를 간단히 적어주세요."></textarea>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn-primary">저장</button>
+        </div>
+    </form>
+</main>
+</body>
+</html>
