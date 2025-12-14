@@ -1,27 +1,38 @@
+import os
+from datetime import datetime
+
 from flask import (
     Flask, render_template, request,
     redirect, url_for, flash, jsonify, abort
 )
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
-import os
 
-app = Flask(__name__)
-app.secret_key = "change-this-secret-key"  # 적당히 바꿔도 됨
 
-# --- 간단한 관리자 키 ---
-app.config["ADMIN_KEY"] = "my-admin-key"   # 네가 기억하기 쉬운 걸로 바꿔
+def create_app():
+    app = Flask(__name__)
 
-# ---------------------------------------------------
-#  SQLite DB 설정 (절대 경로 + 새 파일 이름)
-#  예전 anime_reviews.db 대신 anime_reviews_v2.db 사용
-# ---------------------------------------------------
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-db_path = os.path.join(BASE_DIR, "anime_reviews_v2.db")
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + db_path
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    # =========================
+    # 1) 환경변수(배포) 우선
+    # =========================
+    app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-key-change-me")
 
+    # Render Postgres는 보통 DATABASE_URL로 들어옴
+    # SQLAlchemy는 postgres:// 대신 postgresql:// 를 선호하는 경우가 있어 prefix 보정
+    database_url = os.environ.get("DATABASE_URL", "sqlite:///anime_reviews.db")
+    if database_url.startswith("postgres://"):
+        database_url = database_url.replace("postgres://", "postgresql://", 1)
+
+    app.config["SQLALCHEMY_DATABASE_URI"] = database_url
+    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+    # 관리자 키도 코드에 박지 말고 env로
+    app.config["ADMIN_KEY"] = os.environ.get("ADMIN_KEY", "my-admin-key")
+
+    return app
+
+
+app = create_app()
 db = SQLAlchemy(app)
 
 
@@ -29,13 +40,14 @@ db = SQLAlchemy(app)
 #  모델
 # ---------------------------------------------------
 class Anime(db.Model):
+    __tablename__ = "anime"
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
     genre = db.Column(db.String(50), nullable=False)
-    year = db.Column(db.Integer)              # 방영 연도
-    episodes = db.Column(db.Integer)          # 화수
-    description = db.Column(db.Text)          # 작품 소개
-    image_url = db.Column(db.String(300))     # static/ 기준 경로 (예: images/haikyuu.jpg)
+    year = db.Column(db.Integer)
+    episodes = db.Column(db.Integer)
+    description = db.Column(db.Text)
+    image_url = db.Column(db.String(300))
 
     reviews = db.relationship(
         "Review",
@@ -55,25 +67,29 @@ class Anime(db.Model):
 
 
 class Review(db.Model):
+    __tablename__ = "review"
     id = db.Column(db.Integer, primary_key=True)
-    nickname = db.Column(db.String(30), nullable=False)          # 작성자 닉네임
-    password_hash = db.Column(db.String(200), nullable=False)    # 삭제용 비밀번호 해시
+    nickname = db.Column(db.String(30), nullable=False)
+    password_hash = db.Column(db.String(200), nullable=False)
+
     rating = db.Column(db.Integer, nullable=False)
     content = db.Column(db.Text, nullable=False)
+
     spoiler = db.Column(db.Boolean, default=False)
     like_count = db.Column(db.Integer, default=0)
     created_date = db.Column(db.DateTime, default=datetime.utcnow)
 
-    anime_id = db.Column(
-        db.Integer,
-        db.ForeignKey("anime.id"),
-        nullable=False
-    )
+    anime_id = db.Column(db.Integer, db.ForeignKey("anime.id"), nullable=False)
 
 
 # ---------------------------------------------------
-#  일반 사용자용 라우트
+#  라우트
 # ---------------------------------------------------
+@app.get("/health")
+def health():
+    return jsonify({"ok": True})
+
+
 @app.route("/")
 def home():
     return redirect(url_for("anime_list"))
@@ -88,7 +104,6 @@ def anime_list():
     per_page = 6
 
     query = Anime.query
-
     if q:
         query = query.filter(Anime.title.contains(q))
     if genre:
@@ -97,7 +112,6 @@ def anime_list():
     animes_all = query.all()
     all_genres = sorted({a.genre for a in Anime.query.all()})
 
-    # 정렬
     if sort == "title":
         animes_all.sort(key=lambda a: a.title)
     elif sort == "title_desc":
@@ -109,17 +123,11 @@ def anime_list():
 
     total = len(animes_all)
     total_pages = (total + per_page - 1) // per_page if total > 0 else 1
-    if page < 1:
-        page = 1
-    if page > total_pages:
-        page = total_pages
+    page = max(1, min(page, total_pages))
 
     start = (page - 1) * per_page
     end = start + per_page
     animes = animes_all[start:end]
-
-    has_prev = page > 1
-    has_next = page < total_pages
 
     return render_template(
         "anime_list.html",
@@ -130,8 +138,8 @@ def anime_list():
         genres=all_genres,
         page=page,
         total_pages=total_pages,
-        has_prev=has_prev,
-        has_next=has_next,
+        has_prev=page > 1,
+        has_next=page < total_pages,
     )
 
 
@@ -148,15 +156,10 @@ def anime_detail(anime_id):
         reviews = reviews_query.order_by(Review.rating.asc()).all()
     elif sort == "likes":
         reviews = reviews_query.order_by(Review.like_count.desc()).all()
-    else:  # newest
+    else:
         reviews = reviews_query.order_by(Review.created_date.desc()).all()
 
-    return render_template(
-        "anime_detail.html",
-        anime=anime,
-        reviews=reviews,
-        sort=sort
-    )
+    return render_template("anime_detail.html", anime=anime, reviews=reviews, sort=sort)
 
 
 @app.route("/anime/<int:anime_id>/review", methods=["POST"])
@@ -170,15 +173,12 @@ def add_review(anime_id):
     if not nickname:
         flash("닉네임을 입력해주세요.")
         return redirect(url_for("anime_detail", anime_id=anime_id))
-
     if not password:
         flash("비밀번호를 입력해주세요. (리뷰 삭제에 사용됩니다)")
         return redirect(url_for("anime_detail", anime_id=anime_id))
-
     if not content:
         flash("리뷰 내용을 입력해주세요.")
         return redirect(url_for("anime_detail", anime_id=anime_id))
-
     if len(content) > 500:
         flash("리뷰는 500자 이내로 작성해주세요.")
         return redirect(url_for("anime_detail", anime_id=anime_id))
@@ -193,13 +193,16 @@ def add_review(anime_id):
         flash("별점은 1~10 사이로 선택해주세요.")
         return redirect(url_for("anime_detail", anime_id=anime_id))
 
+    # anime 존재 검증
+    Anime.query.get_or_404(anime_id)
+
     review = Review(
         nickname=nickname,
         password_hash=generate_password_hash(password),
         rating=rating,
         content=content,
         spoiler=spoiler,
-        anime_id=anime_id
+        anime_id=anime_id,
     )
     db.session.add(review)
     db.session.commit()
@@ -207,10 +210,7 @@ def add_review(anime_id):
     return redirect(url_for("anime_detail", anime_id=anime_id))
 
 
-@app.route(
-    "/anime/<int:anime_id>/review/<int:review_id>/delete",
-    methods=["POST"]
-)
+@app.route("/anime/<int:anime_id>/review/<int:review_id>/delete", methods=["POST"])
 def delete_review(anime_id, review_id):
     review = Review.query.get_or_404(review_id)
     password = (request.form.get("password") or "").strip()
@@ -229,7 +229,6 @@ def delete_review(anime_id, review_id):
     return redirect(url_for("anime_detail", anime_id=anime_id))
 
 
-# AJAX 좋아요
 @app.route("/review/<int:review_id>/like", methods=["POST"])
 def like_review(review_id):
     review = Review.query.get_or_404(review_id)
@@ -239,7 +238,7 @@ def like_review(review_id):
 
 
 # ---------------------------------------------------
-#  관리자 전용 라우트 (애니 추가)
+#  관리자
 # ---------------------------------------------------
 def _check_admin():
     key = request.args.get("key") or request.form.get("key")
@@ -261,9 +260,7 @@ def admin_new_anime():
 
         if not title or not genre:
             flash("제목과 장르는 필수입니다.")
-            return redirect(
-                url_for("admin_new_anime", key=app.config["ADMIN_KEY"])
-            )
+            return redirect(url_for("admin_new_anime", key=app.config["ADMIN_KEY"]))
 
         anime = Anime(
             title=title,
@@ -279,81 +276,44 @@ def admin_new_anime():
         flash("새 애니가 등록되었습니다.")
         return redirect(url_for("anime_detail", anime_id=anime.id))
 
-    # GET
-    return render_template(
-        "admin_anime_form.html",
-        admin_key=app.config["ADMIN_KEY"]
-    )
+    return render_template("admin_anime_form.html", admin_key=app.config["ADMIN_KEY"])
 
 
 # ---------------------------------------------------
-#  DB 초기화 (테이블 생성 + 기본 데이터)
+#  DB 초기화 / 시드
 # ---------------------------------------------------
 def init_db():
     db.create_all()
 
     if Anime.query.count() == 0:
         seed = [
-            Anime(
-                title="하이큐!!",
-                genre="스포츠",
-                year=2014,
-                episodes=25,
-                description="배구에 모든 것을 거는 영춘고 배구부의 성장기.",
-                image_url="images/haikyuu.jpg",
-            ),
-            Anime(
-                title="블루록",
-                genre="스포츠",
-                year=2022,
-                episodes=24,
-                description="세계 최고의 스트라이커를 만들기 위한 블루록 프로젝트.",
-                image_url="images/bluelock.jpg",
-            ),
-            Anime(
-                title="진격의 거인",
-                genre="다크 판타지",
-                year=2013,
-                episodes=25,
-                description="거인에게 잠식된 벽 안의 세계, 인류의 생존 전쟁.",
-                image_url="images/aot.jpg",
-            ),
-            Anime(
-                title="도쿄 리벤져스",
-                genre="액션",
-                year=2021,
-                episodes=24,
-                description="과거로 돌아가 인생을 다시 쓰려는 한 남자의 갱단 타임리프.",
-                image_url="images/tokyo_revengers.jpg",
-            ),
-            Anime(
-                title="귀멸의 칼날",
-                genre="판타지",
-                year=2019,
-                episodes=26,
-                description="혈귀가 된 여동생을 인간으로 되돌리기 위한 탄지로의 여정.",
-                image_url="images/demon_slayer.jpg",
-            ),
-            Anime(
-                title="주술회전",
-                genre="판타지",
-                year=2020,
-                episodes=24,
-                description="저주를 둘러싼 주술사들의 격렬한 싸움.",
-                image_url="images/jjk.jpg",
-            ),
+            Anime(title="하이큐!!", genre="스포츠", year=2014, episodes=25,
+                  description="배구에 모든 것을 거는 영춘고 배구부의 성장기.",
+                  image_url="images/haikyuu.jpg"),
+            Anime(title="블루록", genre="스포츠", year=2022, episodes=24,
+                  description="세계 최고의 스트라이커를 만들기 위한 블루록 프로젝트.",
+                  image_url="images/bluelock.jpg"),
+            Anime(title="진격의 거인", genre="다크 판타지", year=2013, episodes=25,
+                  description="거인에게 잠식된 벽 안의 세계, 인류의 생존 전쟁.",
+                  image_url="images/aot.jpg"),
+            Anime(title="도쿄 리벤져스", genre="액션", year=2021, episodes=24,
+                  description="과거로 돌아가 인생을 다시 쓰려는 한 남자의 갱단 타임리프.",
+                  image_url="images/tokyo_revengers.jpg"),
+            Anime(title="귀멸의 칼날", genre="판타지", year=2019, episodes=26,
+                  description="혈귀가 된 여동생을 인간으로 되돌리기 위한 탄지로의 여정.",
+                  image_url="images/demon_slayer.jpg"),
+            Anime(title="주술회전", genre="판타지", year=2020, episodes=24,
+                  description="저주를 둘러싼 주술사들의 격렬한 싸움.",
+                  image_url="images/jjk.jpg"),
         ]
         db.session.bulk_save_objects(seed)
         db.session.commit()
 
 
-# 앱 import 되자마자 DB/테이블 생성 + 기본 데이터 삽입
 with app.app_context():
     init_db()
 
 
 if __name__ == "__main__":
-    # Render 같은 PaaS에서 PORT 환경변수를 사용
-    port = int(os.environ.get("PORT", 5000))
-    # 0.0.0.0 으로 바인딩해야 외부에서 접속 가능
-    app.run(debug=True, host="0.0.0.0", port=port)
+    # 로컬 실행용
+    app.run(debug=True)

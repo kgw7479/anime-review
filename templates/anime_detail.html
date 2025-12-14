@@ -1,232 +1,273 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8">
-    <title>{{ anime.title }} - Anime Review</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <meta charset="UTF-8">
+  <title>{{ anime.title }} - Anime Review</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
-    <!-- JS 안에 Jinja 문법 없음 -->
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            // 스포일러 버튼
-            var spoilerButtons = document.querySelectorAll(".spoiler-btn");
-            spoilerButtons.forEach(function (btn) {
-                btn.addEventListener("click", function () {
-                    var id = btn.dataset.reviewId;
-                    var content = document.getElementById("spoiler-" + id);
-                    if (!content) return;
-                    content.classList.toggle("open");
-                });
-            });
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      // 평점바 fill
+      var fill = document.querySelector(".rating-bar-fill");
+      if (fill) {
+        var pct = Number(fill.dataset.pct || "0");
+        if (isNaN(pct)) pct = 0;
+        pct = Math.max(0, Math.min(100, pct));
+        fill.style.width = pct + "%";
+      }
 
-            // 좋아요 버튼 (AJAX)
-            var likeButtons = document.querySelectorAll(".like-btn");
-            likeButtons.forEach(function (btn) {
-                btn.addEventListener("click", function (event) {
-                    event.preventDefault();
-                    var id = btn.dataset.reviewId;
-                    var countSpan = document.getElementById("like-count-" + id);
-
-                    fetch("/review/" + id + "/like", {
-                        method: "POST"
-                    }).then(function (response) {
-                        if (!response.ok) {
-                            throw new Error("Network response was not ok");
-                        }
-                        return response.json();
-                    }).then(function (data) {
-                        if (countSpan && typeof data.likes !== "undefined") {
-                            countSpan.textContent = data.likes;
-                        }
-                    }).catch(function (error) {
-                        console.error("Error:", error);
-                    });
-                });
-            });
+      // 스포일러 토글
+      document.querySelectorAll(".spoiler-btn").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          var id = btn.dataset.reviewId;
+          var content = document.getElementById("spoiler-" + id);
+          if (!content) return;
+          content.classList.toggle("open");
         });
-    </script>
+      });
+
+      // 좋아요 AJAX
+      document.querySelectorAll(".like-btn").forEach(function (btn) {
+        btn.addEventListener("click", function (event) {
+          event.preventDefault();
+          var id = btn.dataset.reviewId;
+          var countSpan = document.getElementById("like-count-" + id);
+
+          fetch("/review/" + id + "/like", { method: "POST" })
+            .then(function (r) { if (!r.ok) throw new Error("Network"); return r.json(); })
+            .then(function (data) {
+              if (countSpan && typeof data.likes !== "undefined") countSpan.textContent = data.likes;
+            })
+            .catch(function () {});
+        });
+      });
+
+      // 글자수 카운터
+      var ta = document.getElementById("content");
+      var counter = document.getElementById("char-count");
+      if (ta && counter) {
+        var sync = function () { counter.textContent = (ta.value || "").length + " / 500"; };
+        ta.addEventListener("input", sync);
+        sync();
+      }
+
+      // 중복 제출 방지
+      var form = document.getElementById("review-form");
+      if (form) {
+        form.addEventListener("submit", function () {
+          var b = document.getElementById("submit-review");
+          if (b) { b.disabled = true; b.textContent = "등록 중..."; }
+        });
+      }
+    });
+  </script>
 </head>
+
 <body>
 <header class="site-header">
-    <div class="site-header-inner">
-        <h1 class="logo">Anime Review</h1>
-        <nav class="site-nav">
-            <a href="{{ url_for('anime_list') }}" class="nav-link">애니 목록</a>
-        </nav>
+  <div class="site-header-inner">
+    <div class="brand-wrap">
+      <h1 class="logo">Anime Review</h1>
+      <p class="logo-subtitle">내가 좋아하는 애니를 기록하는 작은 리뷰 사이트</p>
     </div>
+    <nav class="site-nav">
+      <a href="{{ url_for('anime_list') }}" class="nav-link">애니 목록</a>
+    </nav>
+  </div>
 </header>
 
 <main class="container">
-    <section class="detail-header">
-        <img src="{{ url_for('static', filename=anime.image_url) }}"
-             alt="{{ anime.title }}"
-             class="detail-poster">
+  <section class="detail-header">
+    <img src="{{ url_for('static', filename=anime.image_url) }}"
+         alt="{{ anime.title }}"
+         class="detail-poster">
 
-        <div class="detail-info">
-            <h2 class="detail-title">{{ anime.title }}</h2>
+    <div class="detail-info">
+      <h2 class="detail-title">{{ anime.title }}</h2>
 
-            <p class="detail-genre">
-                장르:
-                <span class="badge-genre">{{ anime.genre }}</span>
-                {% if anime.year %}
-                    <span class="badge-year">{{ anime.year }}</span>
-                {% endif %}
-                {% if anime.episodes %}
-                    <span class="badge-episodes">{{ anime.episodes }}화</span>
-                {% endif %}
-            </p>
+      <div class="detail-meta">
+        <span class="badge-genre">{{ anime.genre }}</span>
+        {% if anime.year %}<span class="badge-year">{{ anime.year }}</span>{% endif %}
+        {% if anime.episodes %}<span class="badge-episodes">{{ anime.episodes }}화</span>{% endif %}
+      </div>
 
-            {% if anime.avg_rating %}
-                <p class="detail-rating">
-                    평균 별점:
-                    <span class="rating-strong">
-                        ★ {{ "%.1f"|format(anime.avg_rating) }} / 10
-                    </span>
-                    <span class="rating-count">({{ anime.review_count }}명)</span>
-                </p>
-            {% else %}
-                <p class="detail-rating">
-                    평균 별점: <span class="rating-empty">아직 없습니다.</span>
-                </p>
-            {% endif %}
+      <div class="rating-panel">
+        {% if anime.avg_rating %}
+          <div class="rating-top">
+            <span class="rating-big">★ {{ "%.1f"|format(anime.avg_rating) }}</span>
+            <span class="rating-small">/ 10</span>
+            <span class="rating-count">({{ anime.review_count }}명)</span>
+          </div>
 
-            {% if anime.description %}
-                <p class="detail-desc">{{ anime.description }}</p>
-            {% endif %}
+          <div class="rating-bar">
+            <div class="rating-bar-fill"
+                 data-pct="{{ ((anime.avg_rating / 10) * 100) | round(0) }}"></div>
+          </div>
 
-            <a href="{{ url_for('anime_list') }}" class="back-link">← 애니 목록으로 돌아가기</a>
-        </div>
-    </section>
-
-    <hr class="section-divider">
-
-    <!-- flash 메시지 -->
-    {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            <ul class="flash-list">
-                {% for msg in messages %}
-                    <li class="flash-item">{{ msg }}</li>
-                {% endfor %}
-            </ul>
-        {% endif %}
-    {% endwith %}
-
-    <!-- 리뷰 작성 -->
-    <section class="review-section">
-        <h3>리뷰 남기기</h3>
-        <form action="{{ url_for('add_review', anime_id=anime.id) }}" method="post" class="review-form">
-            <div class="form-row">
-                <label for="nickname">닉네임</label>
-                <input id="nickname" name="nickname" type="text" class="input-text" maxlength="30" required>
-            </div>
-
-            <div class="form-row">
-                <label for="password">비밀번호 (삭제용)</label>
-                <input id="password" name="password" type="password" class="input-text" required>
-            </div>
-
-            <div class="form-row">
-                <label for="rating">별점</label>
-                <select id="rating" name="rating">
-                    {% for i in range(1, 11) %}
-                        <option value="{{ i }}">{{ i }}</option>
-                    {% endfor %}
-                </select>
-                <span class="rating-max">/ 10</span>
-            </div>
-
-            <div class="form-row">
-                <label>
-                    <input type="checkbox" name="spoiler">
-                    스포일러 포함
-                </label>
-            </div>
-
-            <div class="form-row">
-                <label for="content">리뷰</label>
-                <textarea id="content"
-                          name="content"
-                          rows="4"
-                          maxlength="500"
-                          placeholder="에피소드, 캐릭터, 연출, 느낀 점 등 자유롭게 적어보세요. (최대 500자)">
-                </textarea>
-            </div>
-
-            <div class="form-actions">
-                <button type="submit" class="btn-primary">리뷰 등록</button>
-            </div>
-        </form>
-    </section>
-
-    <!-- 리뷰 목록 + 정렬 -->
-    <section class="review-section">
-        <div class="review-header-row">
-            <h3>리뷰 목록</h3>
-
-            <form method="get" action="{{ url_for('anime_detail', anime_id=anime.id) }}">
-                <select name="sort" class="input-select">
-                    <option value="newest" {% if sort == 'newest' %}selected{% endif %}>최신순</option>
-                    <option value="rating_desc" {% if sort == 'rating_desc' %}selected{% endif %}>별점 높은 순</option>
-                    <option value="rating_asc" {% if sort == 'rating_asc' %}selected{% endif %}>별점 낮은 순</option>
-                    <option value="likes" {% if sort == 'likes' %}selected{% endif %}>좋아요 많은 순</option>
-                </select>
-                <button type="submit" class="btn-secondary">정렬</button>
-            </form>
-        </div>
-
-        {% if reviews %}
-            <ul class="review-list">
-                {% for r in reviews %}
-                    <li class="review-item">
-                        <div class="review-header">
-                            <span class="review-rating">★ {{ r.rating }} / 10</span>
-                            <span class="review-nickname">{{ r.nickname }}</span>
-                            <span class="review-date">
-                                {{ r.created_date.strftime("%Y-%m-%d %H:%M") if r.created_date else "" }}
-                            </span>
-                            {% if r.spoiler %}
-                                <span class="badge-spoiler">스포일러</span>
-                            {% endif %}
-                        </div>
-
-                        {% if r.spoiler %}
-                            <button type="button"
-                                    class="spoiler-btn"
-                                    data-review-id="{{ r.id }}">
-                                스포일러 보기
-                            </button>
-                            <p id="spoiler-{{ r.id }}"
-                               class="review-content spoiler-content">
-                                {{ r.content }}
-                            </p>
-                        {% else %}
-                            <p class="review-content">{{ r.content }}</p>
-                        {% endif %}
-
-                        <div class="review-actions">
-                            <button type="button"
-                                    class="like-btn"
-                                    data-review-id="{{ r.id }}">
-                                👍 <span id="like-count-{{ r.id }}">{{ r.like_count }}</span>
-                            </button>
-
-                            <form action="{{ url_for('delete_review', anime_id=anime.id, review_id=r.id) }}"
-                                  method="post"
-                                  class="review-delete-form">
-                                <input type="password"
-                                       name="password"
-                                       class="input-text input-password-inline"
-                                       placeholder="비밀번호">
-                                <button type="submit" class="btn-secondary">삭제</button>
-                            </form>
-                        </div>
-                    </li>
-                {% endfor %}
-            </ul>
+          <div class="rating-hint">평균 점수 시각화</div>
         {% else %}
-            <p class="review-empty">아직 등록된 리뷰가 없습니다. 첫 리뷰를 남겨보세요!</p>
+          <div class="rating-top">
+            <span class="rating-big rating-empty">아직 별점이 없어요</span>
+          </div>
+          <div class="rating-hint">첫 리뷰를 남겨서 점수를 만들어주세요 ✨</div>
         {% endif %}
-    </section>
+      </div>
+
+      {% if anime.description %}
+        <p class="detail-desc">{{ anime.description }}</p>
+      {% endif %}
+
+      <a href="{{ url_for('anime_list') }}" class="back-link">← 애니 목록으로 돌아가기</a>
+    </div>
+  </section>
+
+  <hr class="section-divider">
+
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <ul class="flash-list">
+        {% for msg in messages %}
+          <li class="flash-item">{{ msg }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  {% endwith %}
+
+  <!-- 리뷰 작성 -->
+  <section class="review-section" id="review-form-anchor">
+    <div class="section-head-row">
+      <h3>리뷰 남기기</h3>
+      <div class="mini-muted">닉네임/비밀번호는 삭제에 사용돼요</div>
+    </div>
+
+    <form action="{{ url_for('add_review', anime_id=anime.id) }}"
+          method="post"
+          class="review-form"
+          id="review-form">
+
+      <div class="form-grid">
+        <div class="form-row">
+          <label for="nickname">닉네임</label>
+          <input id="nickname" name="nickname" type="text" class="input-text" maxlength="30" required>
+        </div>
+
+        <div class="form-row">
+          <label for="password">비밀번호 (삭제용)</label>
+          <input id="password" name="password" type="password" class="input-text" required>
+        </div>
+
+        <div class="form-row">
+          <label for="rating">별점</label>
+          <div class="rating-select-row">
+            <select id="rating" name="rating" class="input-select select-active">
+              {% for i in range(1, 11) %}
+                <option value="{{ i }}">{{ i }}</option>
+              {% endfor %}
+            </select>
+            <span class="rating-max">/ 10</span>
+          </div>
+        </div>
+
+        <div class="form-row spoiler-row">
+          <label class="checkbox">
+            <input type="checkbox" name="spoiler">
+            스포일러 포함
+          </label>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="textarea-head">
+          <label for="content">리뷰</label>
+          <span class="char-count" id="char-count">0 / 500</span>
+        </div>
+
+        <textarea id="content"
+                  name="content"
+                  maxlength="500"
+                  placeholder="에피소드, 캐릭터, 연출, 느낀 점 등 자유롭게 적어보세요. (최대 500자)"></textarea>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn-primary" id="submit-review">리뷰 등록</button>
+      </div>
+    </form>
+  </section>
+
+  <!-- 리뷰 목록 -->
+  <section class="review-section" id="reviews">
+    <div class="review-header-row">
+      <h3 style="margin:0;">리뷰 목록</h3>
+
+      <form method="get" action="{{ url_for('anime_detail', anime_id=anime.id) }}" class="sort-form">
+        <select name="sort" class="input-select select-active">
+          <option value="newest" {% if sort == 'newest' %}selected{% endif %}>최신순</option>
+          <option value="rating_desc" {% if sort == 'rating_desc' %}selected{% endif %}>별점 높은 순</option>
+          <option value="rating_asc" {% if sort == 'rating_asc' %}selected{% endif %}>별점 낮은 순</option>
+          <option value="likes" {% if sort == 'likes' %}selected{% endif %}>좋아요 많은 순</option>
+        </select>
+        <button type="submit" class="btn-secondary">정렬</button>
+      </form>
+    </div>
+
+    {% if reviews %}
+      <ul class="review-list">
+        {% for r in reviews %}
+          <li class="review-item">
+            <div class="review-header">
+              <span class="review-rating">★ {{ r.rating }} / 10</span>
+              <span class="review-nickname">{{ r.nickname }}</span>
+              <span class="review-date">
+                {{ r.created_date.strftime("%Y-%m-%d %H:%M") if r.created_date else "" }}
+              </span>
+              {% if r.spoiler %}
+                <span class="badge-spoiler">스포일러</span>
+              {% endif %}
+            </div>
+
+            {% if r.spoiler %}
+              <button type="button" class="spoiler-btn" data-review-id="{{ r.id }}">스포일러 보기</button>
+              <p id="spoiler-{{ r.id }}" class="review-content spoiler-content">{{ r.content }}</p>
+            {% else %}
+              <p class="review-content">{{ r.content }}</p>
+            {% endif %}
+
+            <div class="review-actions">
+              <button type="button" class="like-btn" data-review-id="{{ r.id }}">
+                👍 <span id="like-count-{{ r.id }}">{{ r.like_count }}</span>
+              </button>
+
+              <form action="{{ url_for('delete_review', anime_id=anime.id, review_id=r.id) }}"
+                    method="post"
+                    class="review-delete-form">
+                <input type="password"
+                       name="password"
+                       class="input-text input-password-inline"
+                       placeholder="비밀번호">
+                <button type="submit" class="btn-secondary">삭제</button>
+              </form>
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <div class="empty-card">
+        <div class="empty-title">아직 리뷰가 없어요</div>
+        <div class="empty-sub">첫 리뷰어가 되어보세요 ✨</div>
+        <a class="btn-secondary" href="#review-form-anchor">리뷰 작성하러 가기</a>
+      </div>
+    {% endif %}
+  </section>
 </main>
+
+<!-- 뒤로가기 캐시 완화: 리뷰 등록 후 뒤로가도 “리뷰 없음”으로 돌아가는 현상 완화 -->
+<script>
+  if (window.history && history.replaceState) {
+    history.replaceState(null, "", location.href);
+  }
+  window.addEventListener("pageshow", function (event) {
+    if (event.persisted) window.location.reload();
+  });
+</script>
 </body>
 </html>

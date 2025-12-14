@@ -1,126 +1,121 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8">
-    <title>Anime Review - 애니 목록</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <meta charset="UTF-8">
+  <title>Anime Review - 애니 목록</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
 <header class="site-header">
-    <div class="site-header-inner">
-        <h1 class="logo">Anime Review</h1>
-        <p class="logo-subtitle">내가 좋아하는 애니를 기록하는 작은 리뷰 사이트</p>
-        <nav class="site-nav">
-            <a href="{{ url_for('anime_list') }}" class="nav-link active">애니 목록</a>
-        </nav>
+  <div class="site-header-inner">
+    <div class="brand-wrap">
+      <h1 class="logo">Anime Review</h1>
+      <p class="logo-subtitle">내가 좋아하는 애니를 기록하는 작은 리뷰 사이트</p>
     </div>
+    <nav class="site-nav">
+      <a href="{{ url_for('anime_list') }}" class="nav-link active">애니 목록</a>
+    </nav>
+  </div>
 </header>
 
 <main class="container">
-    <section class="list-header-card">
-        <h2 class="section-title">애니 목록</h2>
-        <p class="section-desc">
-            리뷰를 남기고 싶은 작품을 골라 상세 페이지로 들어가 보세요.
-        </p>
+  <section class="list-header-card">
+    <h2 class="section-title">애니 목록</h2>
+    <p class="section-desc">리뷰를 남기고 싶은 작품을 골라 상세 페이지로 들어가 보세요.</p>
 
-        <form method="get" action="{{ url_for('anime_list') }}" class="filter-form">
-            <input
-                type="text"
-                name="q"
-                class="input-text"
-                placeholder="작품 제목을 검색하세요 (예: 하이큐, 블루록)"
-                value="{{ q }}"
-            >
+    <form method="get" action="{{ url_for('anime_list') }}" class="filter-form">
+      <input
+        type="text"
+        name="q"
+        class="input-text"
+        placeholder="작품 제목을 검색하세요 (예: 하이큐, 블루록)"
+        value="{{ q }}"
+      >
 
-            <select name="genre" class="input-select">
-                <option value="">전체 장르</option>
-                {% for g in genres %}
-                    <option value="{{ g }}" {% if genre == g %}selected{% endif %}>
-                        {{ g }}
-                    </option>
-                {% endfor %}
-            </select>
+      <select name="genre" class="input-select select-active">
+        <option value="">전체 장르</option>
+        {% for g in genres %}
+          <option value="{{ g }}" {% if genre == g %}selected{% endif %}>{{ g }}</option>
+        {% endfor %}
+      </select>
 
-            <select name="sort" class="input-select">
-                <option value="title" {% if sort == 'title' %}selected{% endif %}>제목 오름차순</option>
-                <option value="title_desc" {% if sort == 'title_desc' %}selected{% endif %}>제목 내림차순</option>
-                <option value="rating_desc" {% if sort == 'rating_desc' %}selected{% endif %}>평균 별점 높은 순</option>
-                <option value="rating_asc" {% if sort == 'rating_asc' %}selected{% endif %}>평균 별점 낮은 순</option>
-            </select>
+      <select name="sort" class="input-select select-active">
+        <option value="title" {% if sort == 'title' %}selected{% endif %}>제목 오름차순</option>
+        <option value="title_desc" {% if sort == 'title_desc' %}selected{% endif %}>제목 내림차순</option>
+        <option value="rating_desc" {% if sort == 'rating_desc' %}selected{% endif %}>평균 별점 높은 순</option>
+        <option value="rating_asc" {% if sort == 'rating_asc' %}selected{% endif %}>평균 별점 낮은 순</option>
+      </select>
 
-            <button type="submit" class="btn-primary">검색</button>
-        </form>
-    </section>
+      <button type="submit" class="btn-primary">검색</button>
+    </form>
+  </section>
 
-    <section>
-        {% if animes %}
-            <ul class="anime-list">
-                {% for anime in animes %}
-                    <li class="anime-item">
-                        <a href="{{ url_for('anime_detail', anime_id=anime.id) }}" class="anime-link">
-                            <img src="{{ url_for('static', filename=anime.image_url) }}"
-                                 alt="{{ anime.title }}"
-                                 class="anime-thumb">
+  <section>
+    {% if animes %}
+      <ul class="anime-list">
+        {% for anime in animes %}
+          <li class="anime-item">
+            <a href="{{ url_for('anime_detail', anime_id=anime.id) }}" class="anime-link">
+              <img
+                src="{{ url_for('static', filename=anime.image_url) }}"
+                alt="{{ anime.title }}"
+                class="anime-thumb"
+              >
 
-                            <div class="anime-info">
-                                <div class="anime-title-row">
-                                    <span class="title">{{ anime.title }}</span>
-                                    {% if anime.year %}
-                                        <span class="badge-year">{{ anime.year }}</span>
-                                    {% endif %}
-                                </div>
+              <div class="anime-info">
+                <div class="anime-title-row">
+                  <span class="title">{{ anime.title }}</span>
+                  {% if anime.year %}
+                    <span class="badge-year">{{ anime.year }}</span>
+                  {% endif %}
+                </div>
 
-                                <div class="anime-meta-row">
-                                    <span class="badge-genre">{{ anime.genre }}</span>
+                <div class="anime-meta-row">
+                  <span class="badge-genre">{{ anime.genre }}</span>
 
-                                    {% if anime.avg_rating %}
-                                        <span class="badge-rating">
-                                            ★ {{ "%.1f"|format(anime.avg_rating) }} / 10
-                                            <span class="rating-count">({{ anime.review_count }}명)</span>
-                                        </span>
-                                    {% else %}
-                                        <span class="badge-rating badge-rating-empty">
-                                            아직 별점 없음
-                                        </span>
-                                    {% endif %}
-                                </div>
+                  {% if anime.avg_rating %}
+                    <span class="badge-rating">
+                      ★ {{ "%.1f"|format(anime.avg_rating) }} / 10
+                      <span class="rating-count">({{ anime.review_count }}명)</span>
+                    </span>
+                  {% else %}
+                    <span class="badge-rating badge-rating-empty">아직 별점 없음</span>
+                  {% endif %}
+                </div>
 
-                                {% if anime.description %}
-                                    <p class="anime-desc">
-                                        {{ anime.description[:60] }}{% if anime.description|length > 60 %}...{% endif %}
-                                    </p>
-                                {% endif %}
-                            </div>
-                        </a>
-                    </li>
-                {% endfor %}
-            </ul>
-
-            <!-- 페이지네이션 -->
-            <nav class="pagination">
-                {% if has_prev %}
-                    <a class="page-link"
-                       href="{{ url_for('anime_list', page=page-1, q=q, genre=genre, sort=sort) }}">
-                        ‹ 이전
-                    </a>
+                {% if anime.description %}
+                  <p class="anime-desc">
+                    {{ anime.description[:90] }}{% if anime.description|length > 90 %}...{% endif %}
+                  </p>
                 {% endif %}
+              </div>
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
 
-                <span class="page-info">
-                    {{ page }} / {{ total_pages }}
-                </span>
-
-                {% if has_next %}
-                    <a class="page-link"
-                       href="{{ url_for('anime_list', page=page+1, q=q, genre=genre, sort=sort) }}">
-                        다음 ›
-                    </a>
-                {% endif %}
-            </nav>
-
-        {% else %}
-            <p class="empty-text">조건에 맞는 애니가 없습니다.</p>
+      <nav class="pagination">
+        {% if has_prev %}
+          <a class="page-link"
+             href="{{ url_for('anime_list', page=page-1, q=q, genre=genre, sort=sort) }}">
+            ‹ 이전
+          </a>
         {% endif %}
-    </section>
+
+        <span class="page-info">{{ page }} / {{ total_pages }}</span>
+
+        {% if has_next %}
+          <a class="page-link"
+             href="{{ url_for('anime_list', page=page+1, q=q, genre=genre, sort=sort) }}">
+            다음 ›
+          </a>
+        {% endif %}
+      </nav>
+
+    {% else %}
+      <p class="empty-text">조건에 맞는 애니가 없습니다.</p>
+    {% endif %}
+  </section>
 </main>
 </body>
 </html>

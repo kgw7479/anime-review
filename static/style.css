@@ -1,549 +1,772 @@
-/* 기본 리셋 */
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
+/* =========================
+   Theme (refined dark)
+========================= */
+:root{
+  --bg-0:#070a13;
+  --bg-1:#0b1020;
+  --card:#10182b;
+  --card-2:#0e172a;
+  --line:rgba(255,255,255,.08);
+  --text:#e9eefc;
+  --muted:rgba(233,238,252,.72);
+
+  /* Accent: use less, mostly for actions */
+  --accent:#7c5cff;
+  --accent-2:#9f8bff;
+
+  /* neutrals */
+  --chip:rgba(255,255,255,.06);
+  --chip-2:rgba(255,255,255,.10);
+
+  --shadow: 0 12px 36px rgba(0,0,0,.45);
+  --shadow-soft: 0 10px 26px rgba(0,0,0,.35);
+  --radius:18px;
+  --radius-sm:14px;
 }
 
-body {
-    font-family: -apple-system, BlinkMacSystemFont, "Noto Sans KR", system-ui, sans-serif;
-    background: radial-gradient(circle at top, #f3f7ff, #eef2f7 40%, #e5e9f0);
-    color: #111827;
+*{ box-sizing:border-box; }
+html,body{ height:100%; }
+body{
+  margin:0;
+  color:var(--text);
+  font-family: system-ui,-apple-system,Segoe UI,Roboto,Apple SD Gothic Neo,Noto Sans KR,sans-serif;
+  background:
+    radial-gradient(900px 500px at 15% 10%, rgba(124,92,255,.18), transparent 60%),
+    radial-gradient(800px 500px at 85% 20%, rgba(159,139,255,.10), transparent 60%),
+    linear-gradient(180deg, var(--bg-0), var(--bg-1));
 }
 
-/* 헤더 */
-.site-header {
-    background: #0f172a;
-    color: #f9fafb;
-    padding: 16px 0;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+/* links */
+a{ color:inherit; text-decoration:none; }
+a:hover{ text-decoration:none; }
+
+/* layout container */
+.container{
+  width:min(1100px, 92vw);
+  margin: 0 auto;
+  padding: 22px 0 56px;
 }
 
-.site-header-inner {
-    max-width: 960px;
-    margin: 0 auto;
-    padding: 0 16px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+/* =========================
+   Header
+========================= */
+.site-header{
+  position:sticky;
+  top:0;
+  z-index:10;
+  backdrop-filter: blur(10px);
+  background: rgba(7,10,19,.62);
+  border-bottom:1px solid var(--line);
+}
+.site-header-inner{
+  width:min(1100px, 92vw);
+  margin:0 auto;
+  padding:14px 0;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:18px;
+}
+.logo{
+  margin:0;
+  font-size:20px;
+  letter-spacing:.2px;
+}
+.logo-subtitle{
+  margin:4px 0 0;
+  font-size:12px;
+  color:var(--muted);
+}
+.brand-wrap{
+  display:flex;
+  flex-direction:column;
+  line-height:1.15;
+}
+.site-nav{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.nav-link{
+  padding:10px 12px;
+  border-radius:999px;
+  color:var(--muted);
+  transition: background .18s ease, color .18s ease;
+}
+.nav-link:hover{
+  background: rgba(255,255,255,.06);
+  color: var(--text);
+}
+.nav-link.active{
+  background: rgba(124,92,255,.16);
+  color: var(--text);
+  border:1px solid rgba(124,92,255,.24);
 }
 
-.logo {
-    font-size: 24px;
-    font-weight: 700;
+/* =========================
+   Cards / sections
+========================= */
+.list-header-card{
+  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+  border:1px solid var(--line);
+  border-radius: var(--radius);
+  padding:22px 22px 18px;
+  box-shadow: var(--shadow-soft);
+  margin-bottom:18px; /* 헤더/리스트 갭 개선 */
+}
+.section-title{
+  margin:0;
+  font-size:22px;
+  letter-spacing:.2px;
+}
+.section-desc{
+  margin:8px 0 0;
+  color:var(--muted);
+  font-size:13px;
 }
 
-.logo-subtitle {
-    font-size: 13px;
-    color: #9ca3af;
-    margin-top: 4px;
+/* =========================
+   Form controls
+========================= */
+.filter-form{
+  margin-top:14px;
+  display:grid;
+  grid-template-columns: 1.5fr .65fr .75fr auto;
+  gap:10px;
+  align-items:center;
 }
 
-.site-nav {
-    display: flex;
-    gap: 12px;
-}
-
-.nav-link {
-    color: #e5e7eb;
-    text-decoration: none;
-    font-size: 14px;
-    padding: 6px 10px;
-    border-radius: 999px;
-    transition: background 0.15s ease, color 0.15s ease;
-}
-
-.nav-link:hover {
-    background: rgba(148, 163, 184, 0.25);
-}
-
-.nav-link.active {
-    background: #2563eb;
-    color: #f9fafb;
-}
-
-/* 레이아웃 공통 */
-.container {
-    max-width: 960px;
-    margin: 32px auto 48px;
-    padding: 0 16px;
-}
-
-.card {
-    background: rgba(255, 255, 255, 0.9);
-    border-radius: 18px;
-    padding: 20px 24px;
-    box-shadow: 0 18px 45px rgba(15, 23, 42, 0.12);
-    backdrop-filter: blur(10px);
-    margin-bottom: 20px;
-}
-
-.card-search {
-    margin-bottom: 16px;
-}
-
-.small-card {
-    max-width: 420px;
-    margin: 0 auto;
-}
-
-/* 섹션 제목/설명 */
-.section-title {
-    font-size: 20px;
-    font-weight: 700;
-    margin-bottom: 4px;
-}
-
-.section-desc {
-    font-size: 14px;
-    color: #6b7280;
-    margin-bottom: 14px;
-}
-
-/* 입력 요소 */
 .input-text,
 .input-select,
-.textarea {
-    font: inherit;
-    border-radius: 999px;
-    border: 1px solid #d1d5db;
-    padding: 8px 14px;
-    outline: none;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+textarea{
+  width:100%;
+  color:var(--text);
+  background: rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.10);
+  border-radius: 12px;
+  padding:12px 12px;
+  outline:none;
+  transition: border .16s ease, background .16s ease, box-shadow .16s ease;
 }
 
-.textarea {
-    border-radius: 12px;
-    resize: vertical;
+.input-text::placeholder,
+textarea::placeholder{
+  color: rgba(233,238,252,.55);
 }
 
 .input-text:focus,
 .input-select:focus,
-.textarea:focus {
-    border-color: #2563eb;
-    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+textarea:focus{
+  background: rgba(255,255,255,.06);
+  border-color: rgba(124,92,255,.55);
+  box-shadow: 0 0 0 4px rgba(124,92,255,.16);
+}
+
+/* 콤보박스가 disabled처럼 보이는 문제 해결: 더 액티브하게 */
+.input-select{
+  appearance:none;
+  padding-right:38px;
+  background-image:
+    linear-gradient(45deg, transparent 50%, rgba(233,238,252,.8) 50%),
+    linear-gradient(135deg, rgba(233,238,252,.8) 50%, transparent 50%),
+    linear-gradient(to right, transparent, transparent);
+  background-position:
+    calc(100% - 18px) calc(50% - 2px),
+    calc(100% - 12px) calc(50% - 2px),
+    0 0;
+  background-size: 6px 6px, 6px 6px, 100% 100%;
+  background-repeat:no-repeat;
+}
+
+.select-active{
+  background: rgba(124,92,255,.08);
+  border-color: rgba(124,92,255,.25);
+}
+
+/* buttons */
+.btn-primary{
+  cursor:pointer;
+  border:0;
+  border-radius: 999px;
+  padding:12px 16px;
+  color: #fff;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  box-shadow: 0 10px 22px rgba(124,92,255,.22);
+  transition: transform .14s ease, filter .14s ease, box-shadow .14s ease;
+}
+.btn-primary:hover{
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+  box-shadow: 0 12px 26px rgba(124,92,255,.28);
+}
+.btn-primary:disabled{
+  opacity:.65;
+  cursor:not-allowed;
+  transform:none;
+}
+
+.btn-secondary{
+  cursor:pointer;
+  border-radius: 999px;
+  padding:10px 14px;
+  border:1px solid rgba(255,255,255,.12);
+  color: var(--text);
+  background: rgba(255,255,255,.05);
+  transition: background .14s ease, transform .14s ease, border .14s ease;
+}
+.btn-secondary:hover{
+  background: rgba(255,255,255,.08);
+  border-color: rgba(255,255,255,.16);
+  transform: translateY(-1px);
+}
+
+/* =========================
+   Anime list grid
+========================= */
+.anime-list{
+  list-style:none;
+  padding:0;
+  margin: 0;
+  display:grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap:14px;
+  margin-top: 14px;
+}
+
+.anime-item{
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: var(--radius);
+  overflow:hidden;
+  box-shadow: var(--shadow-soft);
+  transition: transform .18s ease, box-shadow .18s ease, border .18s ease;
+}
+.anime-item:hover{
+  transform: translateY(-4px);
+  box-shadow: var(--shadow);
+  border-color: rgba(124,92,255,.28);
+}
+
+.anime-link{ display:block; height:100%; }
+
+.anime-thumb{
+  width:100%;
+  height: 150px;               /* ✅ 이미지 크기 줄임 */
+  object-fit: cover;
+  display:block;
+  filter: saturate(1.02) contrast(1.02);
+}
+
+.anime-info{
+  padding:12px 12px 14px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
 }
 
-/* 버튼 */
-.btn-primary,
-.btn-secondary,
-.btn-like,
-.spoiler-btn {
-    border-radius: 999px;
-    border: none;
-    font: inherit;
-    cursor: pointer;
-    padding: 7px 14px;
-    transition: background 0.15s ease, transform 0.05s ease;
-}
-
-.btn-primary {
-    background: #2563eb;
-    color: #f9fafb;
-}
-
-.btn-primary:hover {
-    background: #1d4ed8;
-}
-
-.btn-secondary {
-    background: #e5e7eb;
-    color: #111827;
-}
-
-.btn-secondary:hover {
-    background: #d1d5db;
-}
-
-.btn-like {
-    background: #fef3c7;
-    color: #92400e;
-}
-
-.btn-like:hover {
-    background: #fde68a;
-}
-
-.spoiler-btn {
-    background: #f97316;
-    color: #fff7ed;
-    margin-top: 6px;
-}
-
-.spoiler-btn:hover {
-    background: #ea580c;
-}
-
-.btn-primary:active,
-.btn-secondary:active,
-.btn-like:active,
-.spoiler-btn:active {
-    transform: translateY(1px);
-}
-
-/* 검색 폼 */
-.search-form {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    align-items: center;
-}
-
-.search-form .input-text {
-    flex: 1 1 260px;
-}
-
-/* 애니 리스트 */
-.anime-list {
-    list-style: none;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.anime-item {
-    border-radius: 14px;
-    background: #f9fafb;
-    transition: box-shadow 0.15s ease, transform 0.08s ease, background 0.15s ease;
-}
-
-.anime-link {
-    display: flex;
-    gap: 16px;
-    padding: 10px 12px;
-    text-decoration: none;
-    color: inherit;
-}
-
-.anime-item:hover {
-    background: #f3f4ff;
-    box-shadow: 0 10px 28px rgba(148, 163, 184, 0.35);
-    transform: translateY(-1px);
-}
-
-.anime-thumb {
-    width: 64px;
-    height: 64px;
-    border-radius: 12px;
-    object-fit: cover;
-    flex-shrink: 0;
-}
-
-.anime-info {
-    flex: 1;
-}
-
-.anime-title-row {
-    display: flex;
-    align-items: baseline;
-    gap: 6px;
-}
-
-.anime-title-row .title {
-    font-size: 16px;
-    font-weight: 600;
-}
-
-.anime-title-row .year {
-    font-size: 13px;
-    color: #6b7280;
-}
-
-.anime-meta-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-top: 4px;
-    flex-wrap: wrap;
-}
-
-.badge-genre {
-    background: #eff6ff;
-    color: #1d4ed8;
-    border-radius: 999px;
-    padding: 3px 10px;
-    font-size: 12px;
-}
-
-.badge-rating {
-    background: #fef3c7;
-    color: #92400e;
-    border-radius: 999px;
-    padding: 3px 10px;
-    font-size: 12px;
-}
-
-.badge-rating-empty {
-    background: #e5e7eb;
-    color: #4b5563;
-}
-
-.review-count {
-    font-size: 12px;
-    color: #6b7280;
-}
-
-.anime-desc {
-    margin-top: 4px;
-    font-size: 13px;
-    color: #4b5563;
-}
-
-/* 상세 페이지 */
-.detail-header {
-    display: flex;
-    gap: 18px;
-    align-items: flex-start;
-}
-
-.detail-poster {
-    width: 132px;
-    height: 132px;
-    border-radius: 18px;
-    object-fit: cover;
-    flex-shrink: 0;
-}
-
-.detail-info {
-    flex: 1;
-}
-
-.detail-title {
-    font-size: 22px;
-    font-weight: 700;
-    margin-bottom: 4px;
-}
-
-.detail-genre {
-    font-size: 14px;
-    margin-bottom: 4px;
-}
-
-.detail-meta {
-    font-size: 13px;
-    color: #6b7280;
-    margin-bottom: 8px;
-}
-
-.detail-rating {
-    font-size: 14px;
-    margin-bottom: 4px;
-}
-
-.rating-strong {
-    font-weight: 700;
-    color: #f97316;
-    margin-left: 4px;
-}
-
-.rating-empty {
-    color: #6b7280;
-}
-
-.review-count-inline {
-    font-size: 13px;
-    color: #6b7280;
-    margin-left: 4px;
-}
-
-.detail-desc {
-    margin-top: 6px;
-    font-size: 14px;
-    color: #374151;
-    line-height: 1.5;
-}
-
-.back-link {
-    display: inline-block;
-    margin-top: 10px;
-    font-size: 13px;
-    color: #2563eb;
-    text-decoration: none;
-}
-
-.back-link:hover {
-    text-decoration: underline;
-}
-
-/* 리뷰 작성/목록 */
-.review-section h3 {
-    font-size: 18px;
-    margin-bottom: 10px;
-}
-
-.review-form .form-row {
-    margin-bottom: 10px;
-}
-
-.form-row label {
-    display: block;
-    font-size: 13px;
-    margin-bottom: 4px;
-}
-
-.form-row.checkbox-row label {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 13px;
-}
-
-.form-actions {
-    text-align: right;
-}
-
-.review-header-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-/* 정렬 버튼 */
-.review-sort {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-}
-
-.sort-btn {
-    font-size: 12px;
-    padding: 4px 9px;
-    border-radius: 999px;
-    border: 1px solid #e5e7eb;
-    color: #4b5563;
-    text-decoration: none;
-    background: #f9fafb;
-}
-
-.sort-btn.active {
-    background: #2563eb;
-    color: #f9fafb;
-    border-color: #2563eb;
-}
-
-/* 리뷰 리스트 */
-.review-list {
-    list-style: none;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-top: 8px;
-}
+.anime-title-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
 
-.review-item {
-    border-radius: 12px;
-    background: #f9fafb;
-    padding: 10px 12px;
-}
-
-.review-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 8px;
-}
-
-.review-rating {
-    font-weight: 600;
-    color: #f97316;
-    margin-right: 6px;
-}
-
-.review-date {
-    font-size: 12px;
-    color: #9ca3af;
-}
-
-.badge-spoiler {
-    font-size: 11px;
-    background: #f97316;
-    color: #fff7ed;
-    border-radius: 999px;
-    padding: 2px 8px;
-    margin-left: 6px;
-}
-
-.review-actions {
-    display: flex;
-    gap: 6px;
-}
-
-.inline-form {
-    display: inline-block;
-}
-
-.review-content {
-    margin-top: 6px;
-    font-size: 14px;
-    line-height: 1.5;
-}
-
-/* 스포일러 내용 숨김 */
-.spoiler-content {
-    display: none;
-}
-
-.spoiler-content.open {
-    display: block;
-}
-
-/* 플래시 메시지 */
-.flash-list {
-    list-style: none;
-    margin-bottom: 10px;
-}
-
-.flash-item {
-    background: #eff6ff;
-    border-radius: 999px;
-    padding: 6px 12px;
-    font-size: 13px;
-    color: #1d4ed8;
-}
-
-/* 기타 */
-.review-empty,
-.empty-text {
-    font-size: 14px;
-    color: #6b7280;
-}
-
-/* 관리용 리스트 약간 여백 */
-.admin-list .anime-item {
-    background: #f3f4f6;
-}
-
-/* 반응형 */
-@media (max-width: 640px) {
-    .detail-header {
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-    }
-
-    .detail-info {
-        text-align: left;
-        width: 100%;
-    }
-
-    .anime-link {
-        align-items: center;
-    }
-
-    .site-header-inner {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 8px;
-    }
-
-    .site-nav {
-        flex-wrap: wrap;
-    }
-}
-/* 예시: static/style.css 안에 */
-.spoiler-content {
-    display: none;
-}
-.spoiler-content.open {
-    display: block;
+/* ✅ 경고 해결: 표준 line-clamp도 같이 선언 */
+.anime-title-row .title{
+  font-weight:700;
+  font-size:14px;
+  letter-spacing:.2px;
+  line-height:1.25;
+
+  overflow:hidden;
+
+  /* Modern-ish / standard */
+  line-clamp: 2;
+
+  /* WebKit clamp (실사용 핵심) */
+  display:-webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+
+  /* Legacy fallback */
+  display:box;
+  box-orient: vertical;
+}
+
+.badge-year{
+  flex:0 0 auto;
+  font-size:11px;
+  padding:6px 10px;
+  border-radius:999px;
+  background: var(--chip);
+  border:1px solid rgba(255,255,255,.08);
+  color: var(--muted);
+}
+
+.anime-meta-row{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  align-items:center;
+}
+
+.badge-genre{
+  font-size:11px;
+  padding:6px 10px;
+  border-radius:999px;
+  background: rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.08);
+  color: var(--muted);
+}
+
+.badge-rating{
+  font-size:11px;
+  padding:6px 10px;
+  border-radius:999px;
+  background: rgba(124,92,255,.10);
+  border:1px solid rgba(124,92,255,.22);
+  color: var(--text);
+}
+.badge-rating-empty{
+  background: rgba(255,255,255,.05);
+  border-color: rgba(255,255,255,.10);
+  color: var(--muted);
+}
+
+.rating-count{
+  color: rgba(233,238,252,.65);
+  margin-left:6px;
+  font-size:11px;
+}
+
+/* ✅ 경고 해결: 표준 line-clamp도 같이 선언 */
+.anime-desc{
+  margin:0;
+  color: var(--muted);
+  font-size:12px;
+  line-height:1.5;
+
+  overflow:hidden;
+
+  /* Modern-ish / standard */
+  line-clamp: 2;
+
+  /* WebKit clamp */
+  display:-webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+
+  /* Legacy fallback */
+  display:box;
+  box-orient: vertical;
+}
+
+/* empty */
+.empty-text{
+  margin: 18px 0 0;
+  color: var(--muted);
+  padding: 16px 18px;
+  border-radius: var(--radius);
+  border:1px dashed rgba(255,255,255,.14);
+  background: rgba(255,255,255,.03);
+}
+
+/* =========================
+   Pagination (centered)
+========================= */
+.pagination{
+  margin-top:18px;
+  display:flex;
+  align-items:center;
+  justify-content:center; /* ✅ 가운데 정렬 */
+  gap:10px;
+}
+.page-link{
+  padding:10px 14px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.05);
+  color: var(--text);
+  transition: transform .14s ease, background .14s ease;
+}
+.page-link:hover{
+  background: rgba(255,255,255,.08);
+  transform: translateY(-1px);
+}
+.page-info{
+  color: var(--muted);
+  font-size:13px;
+}
+
+/* =========================
+   Detail page
+========================= */
+.detail-header{
+  display:grid;
+  grid-template-columns: 240px 1fr; /* ✅ 포스터 줄임 */
+  gap:18px;
+  align-items:start;
+  background: rgba(255,255,255,.03);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius: var(--radius);
+  padding:16px;
+  box-shadow: var(--shadow-soft);
+  margin-bottom:18px; /* 헤더/리스트 갭 개선 */
+}
+.detail-poster{
+  width:100%;
+  height: 320px;          /* ✅ 포스터 높이 줄임 */
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  border:1px solid rgba(255,255,255,.08);
+}
+.detail-title{
+  margin:0;
+  font-size:22px;
+  letter-spacing:.2px;
+}
+.detail-meta{
+  margin-top:10px;
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  align-items:center;
+}
+.badge-episodes{
+  font-size:11px;
+  padding:6px 10px;
+  border-radius:999px;
+  background: rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.08);
+  color: var(--muted);
+}
+.detail-desc{
+  margin:12px 0 0;
+  color: var(--muted);
+  font-size:13px;
+  line-height:1.6;
+}
+.back-link{
+  display:inline-flex;
+  margin-top:12px;
+  color: rgba(233,238,252,.78);
+  font-size:13px;
+}
+.back-link:hover{
+  color: var(--text);
+}
+
+/* rating panel */
+.rating-panel{
+  margin-top:12px;
+  padding:12px;
+  border-radius: var(--radius-sm);
+  border:1px solid rgba(255,255,255,.08);
+  background: rgba(255,255,255,.03);
+}
+.rating-top{
+  display:flex;
+  align-items:baseline;
+  gap:8px;
+}
+.rating-big{
+  font-weight:800;
+  letter-spacing:.2px;
+}
+.rating-small{
+  color: var(--muted);
+  font-size:13px;
+}
+.rating-empty{
+  color: rgba(233,238,252,.70);
+}
+.rating-bar{
+  margin-top:10px;
+  width:100%;
+  height:10px;
+  border-radius:999px;
+  background: rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.08);
+  overflow:hidden;
+}
+.rating-bar-fill{
+  height:100%;
+  width:0%;
+  border-radius:999px;
+  background: linear-gradient(90deg, rgba(124,92,255,.90), rgba(159,139,255,.90));
+}
+.rating-hint{
+  margin-top:8px;
+  font-size:12px;
+  color: var(--muted);
+}
+
+/* divider */
+.section-divider{
+  border:0;
+  height:1px;
+  background: var(--line);
+  margin: 18px 0;
+}
+
+/* =========================
+   Flash messages
+========================= */
+.flash-list{
+  list-style:none;
+  padding:0;
+  margin: 0 0 14px;
+}
+.flash-item{
+  padding:12px 14px;
+  border-radius: var(--radius-sm);
+  background: rgba(124,92,255,.10);
+  border:1px solid rgba(124,92,255,.22);
+  color: var(--text);
+  margin-bottom:10px;
+}
+
+/* =========================
+   Review section
+========================= */
+.review-section{
+  background: rgba(255,255,255,.03);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius: var(--radius);
+  padding:16px;
+  box-shadow: var(--shadow-soft);
+  margin-top:14px;
+}
+.section-head-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:baseline;
+  gap:12px;
+  margin-bottom:10px;
+}
+.section-head-row h3{
+  margin:0;
+  font-size:16px;
+}
+.mini-muted{
+  color: var(--muted);
+  font-size:12px;
+}
+
+.review-form .form-grid{
+  display:grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap:10px;
+}
+.form-row{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+.form-row label{
+  color: rgba(233,238,252,.80);
+  font-size:12px;
+}
+.rating-select-row{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.rating-max{ color: var(--muted); font-size:13px; }
+
+.spoiler-row{
+  justify-content:flex-end;
+}
+.checkbox{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-size:13px;
+  color: var(--muted);
+}
+
+textarea{
+  min-height: 110px;
+  resize: vertical;
+  padding: 12px 12px;
+}
+
+.textarea-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:baseline;
+}
+.char-count{
+  color: rgba(233,238,252,.58);
+  font-size:12px;
+}
+
+.form-actions{
+  margin-top:10px;
+  display:flex;
+  justify-content:flex-end;
+}
+
+.review-header-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:12px;
+}
+.sort-form{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+/* review list */
+.review-list{
+  list-style:none;
+  padding:0;
+  margin:0;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+.review-item{
+  background: rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius: var(--radius);
+  padding:12px;
+  transition: border .14s ease, transform .14s ease;
+}
+.review-item:hover{
+  border-color: rgba(124,92,255,.20);
+  transform: translateY(-1px);
+}
+
+.review-header{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:10px;
+  margin-bottom:8px;
+}
+.review-rating{
+  font-weight:800;
+}
+.review-nickname{
+  color: rgba(233,238,252,.85);
+}
+.review-date{
+  color: rgba(233,238,252,.55);
+  font-size:12px;
+}
+.badge-spoiler{
+  margin-left:auto;
+  font-size:11px;
+  padding:6px 10px;
+  border-radius:999px;
+  background: rgba(255,95,122,.10);
+  border:1px solid rgba(255,95,122,.24);
+  color: rgba(255,220,226,.95);
+}
+
+.review-content{
+  margin:0;
+  color: rgba(233,238,252,.82);
+  line-height:1.6;
+  font-size:13px;
+}
+
+/* spoiler */
+.spoiler-btn{
+  margin: 6px 0 8px;
+  padding:10px 12px;
+  border-radius: 12px;
+  border:1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.04);
+  color: var(--text);
+  cursor:pointer;
+  transition: background .14s ease, transform .14s ease;
+}
+.spoiler-btn:hover{
+  background: rgba(255,255,255,.07);
+  transform: translateY(-1px);
+}
+.spoiler-content{
+  max-height:0;
+  overflow:hidden;
+  opacity:0;
+  transition: max-height .22s ease, opacity .22s ease;
+}
+.spoiler-content.open{
+  max-height: 480px;
+  opacity:1;
+}
+
+/* actions */
+.review-actions{
+  margin-top:10px;
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
+.like-btn{
+  padding:10px 12px;
+  border-radius: 999px;
+  border:1px solid rgba(124,92,255,.22);
+  background: rgba(124,92,255,.10);
+  color: var(--text);
+  cursor:pointer;
+  transition: transform .14s ease, background .14s ease;
+}
+.like-btn:hover{
+  transform: translateY(-1px);
+  background: rgba(124,92,255,.14);
+}
+.review-delete-form{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.input-password-inline{
+  width: 160px;
+  padding:10px 12px;
+  border-radius: 999px;
+}
+
+/* empty state */
+.empty-card{
+  padding:16px;
+  border-radius: var(--radius);
+  border:1px dashed rgba(255,255,255,.14);
+  background: rgba(255,255,255,.03);
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.empty-title{
+  font-weight:800;
+}
+.empty-sub{
+  color: var(--muted);
+  font-size:13px;
+}
+
+/* =========================
+   Responsive
+========================= */
+@media (max-width: 980px){
+  .anime-list{ grid-template-columns: repeat(2, 1fr); }
+  .filter-form{ grid-template-columns: 1fr 1fr; }
+  .btn-primary{ width:100%; }
+  .detail-header{ grid-template-columns: 190px 1fr; }
+}
+@media (max-width: 560px){
+  .anime-list{ grid-template-columns: 1fr; }
+  .filter-form{ grid-template-columns: 1fr; }
+  .site-header-inner{ flex-direction:column; align-items:flex-start; }
+  .detail-header{ grid-template-columns: 1fr; }
+  .detail-poster{ height: 260px; }
+  .review-form .form-grid{ grid-template-columns: 1fr; }
+  .review-actions{ justify-content:flex-start; }
 }
